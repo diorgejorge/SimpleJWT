@@ -53,7 +53,7 @@ public class SimpleJwtUtils {
         return AUTH_HEADER_VALUE_PREFIX+builder.compact();
     }
 
-    public static JwtSenderInterface validateJWT(HttpServletRequest request, JwtReceiverInterface tokenControl) throws JwtException {
+    public static Claims validateJWT(HttpServletRequest request, JwtReceiverInterface tokenControl) throws JwtException {
         String jwt = getBearerToken(request);
         if(jwt == null){
             throw new JwtException("invalid requisition");
@@ -62,10 +62,8 @@ public class SimpleJwtUtils {
         Claims claims = Jwts.parser()
                 .setSigningKey(DatatypeConverter.parseBase64Binary(tokenControl.getCriptokey()))
                 .parseClaimsJws(jwt).getBody();
-        Gson gson = new Gson();
-        JwtSenderInterface tokenReceived = gson.fromJson(claims.getSubject(), JwtSenderInterface.class);
-        if (tokenReceived.getId().equals(tokenControl.getId())) {
-            return tokenReceived;
+        if (claims.getId().equalsIgnoreCase(tokenControl.getId().toString())) {
+            return claims;
         } else {
             throw new JwtException("invalid requisition");
         }
